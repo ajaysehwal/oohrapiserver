@@ -13,7 +13,7 @@ const xlsx = require("xlsx");
 const fs = require("fs-extra");
 app.use(bodyParser.json());
 const corsOptions = {
-  origin: /\.onrender\.com$/,
+  origin: 'https://oohrerpsoftware.vercel.app',
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",};
 
   // app.use(function (req, res, next) {
