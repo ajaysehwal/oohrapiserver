@@ -12,7 +12,7 @@ const path = require("path");
 const xlsx = require("xlsx");
 const fs = require("fs-extra");
 app.use(bodyParser.json());
-pp.use((req, res, next) => {
+app.use((req, res, next) => {
   res.setHeader(
     "Access-Control-Allow-Origin",
     "https://oohrerpsoftware.vercel.app"
