@@ -12,16 +12,22 @@ const path = require("path");
 const xlsx = require("xlsx");
 const fs = require("fs-extra");
 app.use(bodyParser.json());
-  app.use(function (req, res, next) {
-    //Enabling CORS
-    res.header("Access-Control-Allow-Origin", "https://oohrerpsoftware.vercel.app");
-    res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
-      next();
-    });
+const corsOptions = {
+  origin: /\.onrender\.com$/,
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",};
+
+  // app.use(function (req, res, next) {
+  //   //Enabling CORS
+  //   res.header("Access-Control-Allow-Origin", "https://oohrerpsoftware.vercel.app");
+  //   res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
+  //     next();
+  //   });
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json());
 
-app.use(cors());
+// app.use(cors());
+app.use(cors(corsOptions));
+
 app.use("/images/studentfiles", express.static("images/studentfiles"));
 app.use("/images/teachersfiles", express.static("images/teachersfiles"));
 app.use("/images/nonteacherfiles", express.static("images/nonteacherfiles"));
