@@ -17,7 +17,9 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json());
 var corsOptions = {
   origin: 'https://oohrerpsoftware.vercel.app',
-  optionsSuccessStatus: 200,
+   optionsSuccessStatus: 200,
+   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  preflightContinue: false,
 }
 app.use(cors(corsOptions));
 
