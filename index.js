@@ -15,12 +15,11 @@ app.use(bodyParser.json());
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json());
-
-app.use(cors({
+var corsOptions = {
   origin: 'https://oohrerpsoftware.vercel.app',
-  methods: 'GET,HEAD,OPTIONS,POST,PUT', // Add the allowed methods
-  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'x-client-key', 'x-client-token', 'x-client-secret', 'Authorization'], // Add the allowed headers
-}));
+  optionsSuccessStatus: 200,
+}
+app.use(cors(corsOptions));
 
 app.use("/images/studentfiles", express.static("images/studentfiles"));
 app.use("/images/teachersfiles", express.static("images/teachersfiles"));
