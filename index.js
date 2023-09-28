@@ -94,9 +94,7 @@ const excelupload = multer({ storage: excelfilesstorage });
 // const upload=multer({dest:"upload/"});
 
 app.post(
-  "/apistudents",
-   cors(corsOptions),
-  studentupload.fields([
+  "/apistudents",studentupload.fields([
     { name: "file1", maxCount: 1 },
     { name: "file2", maxCount: 1 },
   ]),
