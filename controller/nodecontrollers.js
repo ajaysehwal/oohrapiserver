@@ -461,88 +461,124 @@ function generateRandomCodeinExcel() {
   return randomCode.toString();
 }
 const xlsx = require("xlsx");
-const student_school_side_code = generateRandomCodeinExcel();
+
+   
+   
+
+
+
 const poststudentdata_excel = (req, res) => {
-  const workbook = xlsx.readFile(req.file.path);
-  const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-  let range = xlsx.utils.decode_range(worksheet["!ref"]);
-  for (let row = range.s.r; row <= range.e.r; row++) {
-    let data = [];
-    for (let col = range.s.c; col <= range.e.c; col++) {
-      let cell = worksheet[xlsx.utils.encode_cell({ r: row, c: col })];
+    const workbook = xlsx.readFile(req.file.path);
+    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+    const dbPromises = [];
 
-      data.push(cell.v);
+    let range = xlsx.utils.decode_range(worksheet["!ref"]);
+
+    for (let row = range.s.r; row <= range.e.r; row++) {
+        let data = [];
+
+        for (let col = range.s.c; col <= range.e.c; col++) {
+            let cell = worksheet[xlsx.utils.encode_cell({ r: row, c: col })];
+
+            if (cell && cell.v !== undefined) {
+                data.push(cell.v);
+            } else {
+                data.push(null); // or handle the case where cell is undefined
+            }
+        }
+
+        const baseDate = new Date(Date.UTC(1900, 0, 1));
+        const realDate = new Date(
+            baseDate.getTime() + (data[1] || 0 - 2) * 86400000
+        ).toISOString().slice(0, 10);
+
+        const randomCode = crypto.randomBytes(6).toString("hex").toUpperCase();
+        const student_school_side_code = generateRandomCodeinExcel(); // You should define this function
+
+        const studentdata = [
+            data[0] || "",
+            realDate || 0,
+            data[2] || "",
+            data[3] || "",
+            data[4] || "",
+            data[5] || "",
+            data[6] || "",
+            data[7] || "",
+            data[8] || "",
+            data[9] || "",
+            data[10] || "",
+            data[11] || "",
+            data[12] || "",
+            data[13] || "",
+            data[14] || "",
+            data[15] || "",
+            data[16] || "",
+            data[17] || "",
+            req.body.class,
+            req.body.section,
+            data[18] || "",
+            data[19] || "",
+            data[20] || "",
+            req.body.admin_token,
+            randomCode,
+            student_school_side_code,
+        ];
+
+        const FeeListEntryData = [
+            randomCode,
+            req.body.admin_token,
+            data[0] || "",
+            data[2] || "",
+            data[3] || "",
+            req.body.class,
+            req.body.section,
+            data[6] || "",
+            data[20] || "",
+            data[11] || "",
+            data[13] || "",
+            student_school_side_code,
+        ];
+    
+        const sql =
+            "INSERT INTO `studentdata`(`student_name`, `date_of_birth`, `father_name`, `mother_name`, `address`, `nationality`, `admission_no`, `age`, `religion`, `city`, `phone`, `parents_phone`, `previous_school_name`, `email`, `transfer_certificate`, `physical_handicap`, `house`, `student_category`, `select_class`, `section`, `state`, `blood_group`, `gender`, `admin_token`, `student_code`, `student_school_side_code`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+
+        const FeeListEntry =
+            "INSERT INTO `studentfeesdb` (`student_id` , `school_id`, `student_name`, `father_name`, `mother_name`, `student_class`, `section`, `admission_no`, `gender`, `phone`, `email` , `student_school_side_code`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
+
+            dbPromises.push(
+              new Promise((resolve, reject) => {
+                  db.query(sql, studentdata, (err, studentDataResult) => {
+                      if (err) {
+                          reject(err);
+                      } else {
+                          // Insert FeeListEntry data
+                          db.query(FeeListEntry, FeeListEntryData, (err, feeListResult) => {
+                              if (err) {
+                                  reject(err);
+                              } else {
+                                  resolve({ success: true });
+                              }
+                          });
+                      }
+                  });
+              })
+          );
     }
-    const baseDate = new Date(Date.UTC(1900, 0, 1));
-    const realDate = new Date(
-      baseDate.getTime() + (data[1] || 0 - 2) * 86400000
-    )
-      .toISOString()
-      .slice(0, 10);
-
-    const randomCode = crypto.randomBytes(6).toString("hex").toUpperCase();
-
-    const studentdata = [
-      data[0] || "",
-      realDate || 0,
-      data[2] || "",
-      data[3] || "",
-      data[4] || "",
-      data[5] || "",
-      data[6] || "",
-      data[7] || "",
-      data[8] || "",
-      data[9] || "",
-      data[10] || "",
-      data[11] || "",
-      data[12] || "",
-      data[13] || "",
-      data[14] || "",
-      data[15] || "",
-      data[16] || "",
-      data[17] || "",
-      req.body.class,
-      req.body.section,
-      data[18] || "",
-      data[19] || "",
-
-      data[20] || "",
-      req.body.admin_token,
-      randomCode,
-      student_school_side_code,
-    ];
-    const FeeListEntryData = [
-      randomCode,
-      req.body.admin_token,
-      data[0] || "",
-      data[2] || "",
-      data[3] || "",
-      req.body.class,
-      req.body.section,
-      data[6] || "",
-      data[20] || "",
-      data[11] || "",
-      data[13] || "",
-      student_school_side_code,
-    ];
-    const sql =
-      "INSERT INTO `studentdata`(`student_name`, `date_of_birth`, `father_name`,`mother_name`, `address`, `nationality`, `admission_no`, `age`, `religion`, `city`, `phone`, `parents_phone`, `previous_school_name`, `email`, `transfer_certificate`, `physical_handicap`, `house`, `student_category`, `select_class`, `section`, `state`, `blood_group`,`gender`,`admin_token`,`student_code`,`student_school_side_code`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-    const FeeListEntry = `INSERT INTO studentfeesdb (student_id, school_id, student_name,father_name ,mother_name, student_class, section, admission_no, gender,phone,email,student_school_side_code) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`;
-
-    db.query(sql, studentdata, (err, data) => {
-      if (err) {
-        res.send(err);
-      } else {
-        db.query(FeeListEntry, FeeListEntryData, (err, data) => {
-          if (err) {
-            res.status(501).json({ Message: err });
-          }
-        });
-        res.send(data);
-      }
+    Promise.all(dbPromises)
+    .then(results => {
+        // All queries executed successfully
+        res.status(200).json({ success: true });
+    })
+    .catch(err => {
+        // Handle errors here
+        res.status(500).json({ error: "An error occurred." });
     });
-  }
 };
+
+
+
+
+
 
 const postteacher_data = (req, res) => {
   const randomCode = crypto.randomBytes(6).toString("hex").toUpperCase();
@@ -1537,7 +1573,8 @@ const SchoolExam_Get = (req, res) => {
     }
   });
 };
-const StudentMarksUpload = (req, res) => {
+
+const StudentMarksUpload = async (req, res) => {
   const workbook = xlsx.readFile(req.file.path);
   const worksheet = workbook.Sheets[workbook.SheetNames[0]];
   const StudentData = [];
@@ -1545,56 +1582,52 @@ const StudentMarksUpload = (req, res) => {
   let range = xlsx.utils.decode_range(worksheet["!ref"]);
 
   for (let row = range.s.r; row <= range.e.r; row++) {
-    let data = [];
+      let data = [];
 
-    for (let col = range.s.c; col <= range.e.c; col++) {
-      let cell = worksheet[xlsx.utils.encode_cell({ r: row, c: col })];
+      for (let col = range.s.c; col <= range.e.c; col++) {
+          let cell = worksheet[xlsx.utils.encode_cell({ r: row, c: col })];
 
-      data.push(cell.v);
-    }
-    StudentData.push(data);
+          data.push(cell.v);
+      }
+      StudentData.push(data);
   }
   const [headers, ...data] = StudentData;
   const studentsData = data.map((student) => {
-    const studentObject = {};
-    headers.forEach((heading, index) => {
-      if (heading === "Total Marks") {
-        studentObject["total"] = { total: student[index] };
-      } else {
-        studentObject[heading] = student[index];
-      }
-    });
-    return studentObject;
+      const studentObject = {};
+      headers.forEach((heading, index) => {
+          if (heading === "Total Marks") {
+              studentObject["total"] = { total: student[index] };
+          } else {
+              studentObject[heading] = student[index];
+          }
+      });
+      return studentObject;
   });
 
+  try {
+      for (const student of studentsData) {
+          const studentJSON = JSON.stringify(student);
+          const studentId = student["Student ID"];
 
-  studentsData.forEach((student) => {
-    const studentJSON = JSON.stringify(student);
-    const studentId = student["Student ID"];
+          const sql =
+              "INSERT INTO `student_exam_marks`(`school_id`, `student_class`, `exam_name`, `student_id`, `marksdata`) VALUES (?,?,?,?,?)";
+          const values = [
+              req.body.school_id,
+              req.body.student_class,
+              req.body.exam_name,
+              studentId,
+              studentJSON,
+          ];
 
-    const sql =
-      "INSERT INTO `student_exam_marks`(`school_id`, `student_class`, `exam_name`, `student_id`, `marksdata`) VALUES (?,?,?,?,?)";
-    const values = [studentJSON];
-
-    db.query(
-      sql,
-      [
-        req.body.school_id,
-        req.body.student_class,
-        req.body.exam_name,
-        studentId,
-        studentJSON,
-      ],
-      (err, result) => {
-        if (err) {
-            res.status(404).json({response:err});
-        } else {
-          res.status(200).json({response:true});
-        }
+          db.query(sql, values);
       }
-    );
-  });
+
+      res.status(200).json({ response: true });
+  } catch (err) {
+      res.status(500).json({ response: err.message });
+  }
 };
+
 module.exports = {
   SchoolExam_Get,
   StudentMarksUpload,
