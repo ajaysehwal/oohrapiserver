@@ -22,7 +22,7 @@ var corsOptions = {
   preflightContinue: false,
 }
 app.use(cors(corsOptions));
-
+// app.use(cors());
 app.use("/images/studentfiles", express.static("images/studentfiles"));
 app.use("/images/teachersfiles", express.static("images/teachersfiles"));
 app.use("/images/nonteacherfiles", express.static("images/nonteacherfiles"));
@@ -94,7 +94,8 @@ const excelupload = multer({ storage: excelfilesstorage });
 // const upload=multer({dest:"upload/"});
 
 app.post(
-  "/apistudents",studentupload.fields([
+  "/apistudents",
+  studentupload.fields([
     { name: "file1", maxCount: 1 },
     { name: "file2", maxCount: 1 },
   ]),
@@ -115,7 +116,7 @@ app.get(
   "/studentsdata/:classes//:school_id",
   controllers.getstudent_data_by_class
 );
-app.get("/apistudents/:id", controllers.getstudent_data_admission_no);
+app.get("/apistudents/:id/:school_id", controllers.getstudent_data_admission_no);
 app.post(
   "/apiexceldata",
   excelupload.single("file"),
@@ -309,5 +310,7 @@ app.post(
   StudentMarksUpload.single("file"),
   controllers.StudentMarksUpload
 );
+app.get("/student-marks-api/:id/:exam",controllers.getstudentmarks)
+app.put("/student-marks-api/:school_id/:student_id",controllers.UpdateStudentMarks);
 
 app.listen(process.env.PORT);
