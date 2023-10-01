@@ -444,9 +444,9 @@ const getstudent_data_by_class = (req, res) => {
   });
 };
 const getstudent_data_admission_no = (req, res) => {
-  const id = req.params.id;
-  const sql = "SELECT * FROM `studentdata` WHERE admission_no=?";
-  db.query(sql, id, (err, data) => {
+  const {id,school_id} = req.params;
+  const sql = "SELECT * FROM `studentdata` WHERE admission_no=? AND admin_token=?";
+  db.query(sql, [id,school_id], (err, data) => {
     if (err) {
       return err;
     } else {
@@ -462,118 +462,245 @@ function generateRandomCodeinExcel() {
 }
 const xlsx = require("xlsx");
 
-   
-   
+
+
+
+// const poststudentdata_excel = (req, res) => {
+//     const workbook = xlsx.readFile(req.file.path);
+//     const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+//     const dbPromises = [];
+
+//     let range = xlsx.utils.decode_range(worksheet["!ref"]);
+
+//     for (let row = range.s.r; row <= range.e.r; row++) {
+//         let data = [];
+
+//         for (let col = range.s.c; col <= range.e.c; col++) {
+//             let cell = worksheet[xlsx.utils.encode_cell({ r: row, c: col })];
+
+//             if (cell && cell.v !== undefined) {
+//                 data.push(cell.v);
+//             } else {
+//                 data.push(null); // or handle the case where cell is undefined
+//             }
+//         }
+
+//         const baseDate = new Date(Date.UTC(1900, 0, 1));
+//         const realDate = new Date(
+//             baseDate.getTime() + (data[1] || 0 - 2) * 86400000
+//         ).toISOString().slice(0, 10);
+
+//         const randomCode = crypto.randomBytes(6).toString("hex").toUpperCase();
+//         const student_school_side_code = generateRandomCodeinExcel(); // You should define this function
+
+//         const studentdata = [
+//             data[0] || "",
+//             realDate || 0,
+//             data[2] || "",
+//             data[3] || "",
+//             data[4] || "",
+//             data[5] || "",
+//             data[6] || "",
+//             data[7] || "",
+//             data[8] || "",
+//             data[9] || "",
+//             data[10] || "",
+//             data[11] || "",
+//             data[12] || "",
+//             data[13] || "",
+//             data[14] || "",
+//             data[15] || "",
+//             data[16] || "",
+//             data[17] || "",
+//             req.body.class,
+//             req.body.section,
+//             data[18] || "",
+//             data[19] || "",
+//             data[20] || "",
+//             req.body.admin_token,
+//             randomCode,
+//             student_school_side_code,
+//         ];
+
+//         const FeeListEntryData = [
+//             randomCode,
+//             req.body.admin_token,
+//             data[0] || "",
+//             data[2] || "",
+//             data[3] || "",
+//             req.body.class,
+//             req.body.section,
+//             data[6] || "",
+//             data[20] || "",
+//             data[11] || "",
+//             data[13] || "",
+//             student_school_side_code,
+//         ];
+    
+//         const sql =
+//             "INSERT INTO `studentdata`(`student_name`, `date_of_birth`, `father_name`, `mother_name`, `address`, `nationality`, `admission_no`, `age`, `religion`, `city`, `phone`, `parents_phone`, `previous_school_name`, `email`, `transfer_certificate`, `physical_handicap`, `house`, `student_category`, `select_class`, `section`, `state`, `blood_group`, `gender`, `admin_token`, `student_code`, `student_school_side_code`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+
+//         const FeeListEntry =
+//             "INSERT INTO `studentfeesdb` (`student_id` , `school_id`, `student_name`, `father_name`, `mother_name`, `student_class`, `section`, `admission_no`, `gender`, `phone`, `email` , `student_school_side_code`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
+
+//             dbPromises.push(
+//               new Promise((resolve, reject) => {
+//                   db.query(sql, studentdata, (err, studentDataResult) => {
+//                       if (err) {
+//                           reject(err);
+//                       } else {
+//                           // Insert FeeListEntry data
+//                           db.query(FeeListEntry, FeeListEntryData, (err, feeListResult) => {
+//                               if (err) {
+//                                   reject(err);
+//                               } else {
+//                                   resolve({ success: true });
+//                               }
+//                           });
+//                       }
+//                   });
+//               })
+//           );
+//     }
+//     Promise.all(dbPromises)
+//     .then(results => {
+//         // All queries executed successfully
+//         res.status(200).json({ success: true });
+//     })
+//     .catch(err => {
+//         // Handle errors here
+//         res.status(500).json({ error: "An error occurred." });
+//     });
+// };
+
+
 
 
 
 const poststudentdata_excel = (req, res) => {
-    const workbook = xlsx.readFile(req.file.path);
-    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-    const dbPromises = [];
+  const workbook = xlsx.readFile(req.file.path);
+  const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+  const dbPromises = [];
 
-    let range = xlsx.utils.decode_range(worksheet["!ref"]);
+  let range = xlsx.utils.decode_range(worksheet["!ref"]);
 
-    for (let row = range.s.r; row <= range.e.r; row++) {
-        let data = [];
+  for (let row = range.s.r; row <= range.e.r; row++) {
+    let data = [];
 
-        for (let col = range.s.c; col <= range.e.c; col++) {
-            let cell = worksheet[xlsx.utils.encode_cell({ r: row, c: col })];
+    for (let col = range.s.c; col <= range.e.c; col++) {
+      let cell = worksheet[xlsx.utils.encode_cell({ r: row, c: col })];
 
-            if (cell && cell.v !== undefined) {
-                data.push(cell.v);
-            } else {
-                data.push(null); // or handle the case where cell is undefined
-            }
-        }
-
-        const baseDate = new Date(Date.UTC(1900, 0, 1));
-        const realDate = new Date(
-            baseDate.getTime() + (data[1] || 0 - 2) * 86400000
-        ).toISOString().slice(0, 10);
-
-        const randomCode = crypto.randomBytes(6).toString("hex").toUpperCase();
-        const student_school_side_code = generateRandomCodeinExcel(); // You should define this function
-
-        const studentdata = [
-            data[0] || "",
-            realDate || 0,
-            data[2] || "",
-            data[3] || "",
-            data[4] || "",
-            data[5] || "",
-            data[6] || "",
-            data[7] || "",
-            data[8] || "",
-            data[9] || "",
-            data[10] || "",
-            data[11] || "",
-            data[12] || "",
-            data[13] || "",
-            data[14] || "",
-            data[15] || "",
-            data[16] || "",
-            data[17] || "",
-            req.body.class,
-            req.body.section,
-            data[18] || "",
-            data[19] || "",
-            data[20] || "",
-            req.body.admin_token,
-            randomCode,
-            student_school_side_code,
-        ];
-
-        const FeeListEntryData = [
-            randomCode,
-            req.body.admin_token,
-            data[0] || "",
-            data[2] || "",
-            data[3] || "",
-            req.body.class,
-            req.body.section,
-            data[6] || "",
-            data[20] || "",
-            data[11] || "",
-            data[13] || "",
-            student_school_side_code,
-        ];
-    
-        const sql =
-            "INSERT INTO `studentdata`(`student_name`, `date_of_birth`, `father_name`, `mother_name`, `address`, `nationality`, `admission_no`, `age`, `religion`, `city`, `phone`, `parents_phone`, `previous_school_name`, `email`, `transfer_certificate`, `physical_handicap`, `house`, `student_category`, `select_class`, `section`, `state`, `blood_group`, `gender`, `admin_token`, `student_code`, `student_school_side_code`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-
-        const FeeListEntry =
-            "INSERT INTO `studentfeesdb` (`student_id` , `school_id`, `student_name`, `father_name`, `mother_name`, `student_class`, `section`, `admission_no`, `gender`, `phone`, `email` , `student_school_side_code`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
-
-            dbPromises.push(
-              new Promise((resolve, reject) => {
-                  db.query(sql, studentdata, (err, studentDataResult) => {
-                      if (err) {
-                          reject(err);
-                      } else {
-                          // Insert FeeListEntry data
-                          db.query(FeeListEntry, FeeListEntryData, (err, feeListResult) => {
-                              if (err) {
-                                  reject(err);
-                              } else {
-                                  resolve({ success: true });
-                              }
-                          });
-                      }
-                  });
-              })
-          );
+      if (cell && cell.v !== undefined) {
+        data.push(cell.v);
+      } else {
+        data.push(null); // or handle the case where cell is undefined
+      }
     }
-    Promise.all(dbPromises)
+
+    // Check if all data fields in the row are empty or null
+    const isRowEmpty = data.every(value => value === null || value === '');
+
+    if (!isRowEmpty) {
+      // Proceed with data insertion
+      const baseDate = new Date(Date.UTC(1900, 0, 1));
+      const realDate = new Date(
+        baseDate.getTime() + (data[1] || 0 - 2) * 86400000
+      ).toISOString().slice(0, 10);
+
+      const randomCode = crypto.randomBytes(6).toString("hex").toUpperCase();
+      const student_school_side_code = generateRandomCodeinExcel(); // You should define this function
+
+      const studentdata = [
+        data[0] || "",
+        realDate || 0,
+        data[2] || "",
+        data[3] || "",
+        data[4] || "",
+        data[5] || "",
+        data[6] || "",
+        data[7] || "",
+        data[8] || "",
+        data[9] || "",
+        data[10] || "",
+        data[11] || "",
+        data[12] || "",
+        data[13] || "",
+        data[14] || "",
+        data[15] || "",
+        data[16] || "",
+        data[17] || "",
+        req.body.class,
+        req.body.section,
+        data[18] || "",
+        data[19] || "",
+        data[20] || "",
+        req.body.admin_token,
+        randomCode,
+        student_school_side_code,
+      ];
+
+      const FeeListEntryData = [
+        randomCode,
+        req.body.admin_token,
+        data[0] || "",
+        data[2] || "",
+        data[3] || "",
+        req.body.class,
+        req.body.section,
+        data[6] || "",
+        data[20] || "",
+        data[11] || "",
+        data[13] || "",
+        student_school_side_code,
+      ];
+
+      const sql =
+        "INSERT INTO `studentdata`(`student_name`, `date_of_birth`, `father_name`, `mother_name`, `address`, `nationality`, `admission_no`, `age`, `religion`, `city`, `phone`, `parents_phone`, `previous_school_name`, `email`, `transfer_certificate`, `physical_handicap`, `house`, `student_category`, `select_class`, `section`, `state`, `blood_group`, `gender`, `admin_token`, `student_code`, `student_school_side_code`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+
+      const FeeListEntry =
+        "INSERT INTO `studentfeesdb` (`student_id` , `school_id`, `student_name`, `father_name`, `mother_name`, `student_class`, `section`, `admission_no`, `gender`, `phone`, `email` , `student_school_side_code`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
+
+      dbPromises.push(
+        new Promise((resolve, reject) => {
+          db.query(sql, studentdata, (err, studentDataResult) => {
+            if (err) {
+              reject(err);
+            } else {
+              // Insert FeeListEntry data
+              db.query(FeeListEntry, FeeListEntryData, (err, feeListResult) => {
+                if (err) {
+                  reject(err);
+                } else {
+                  resolve({ success: true });
+                }
+              });
+            }
+          });
+        })
+      );
+    }
+  }
+
+  if (dbPromises.length === 0) {
+    // No non-empty rows found
+    res.status(400).json({ error: 'No valid data found in the Excel file.' });
+    return;
+  }
+
+  // Wait for all promises to resolve or reject
+  Promise.all(dbPromises)
     .then(results => {
-        // All queries executed successfully
-        res.status(200).json({ success: true });
+      // All queries executed successfully
+      res.status(200).json({ success: true });
     })
     .catch(err => {
-        // Handle errors here
-        res.status(500).json({ error: "An error occurred." });
+      // Handle errors here
+      console.error('Error inserting data:', err);
+      res.status(500).json({ error: 'An error occurred while inserting data.' });
     });
 };
+
+
 
 
 
@@ -1586,16 +1713,20 @@ const StudentMarksUpload = async (req, res) => {
 
       for (let col = range.s.c; col <= range.e.c; col++) {
           let cell = worksheet[xlsx.utils.encode_cell({ r: row, c: col })];
+          if (cell && cell.v !== undefined) {
+            data.push(cell.v);
+          }
 
-          data.push(cell.v);
       }
-      StudentData.push(data);
-  }
+      if (data.length > 0) {
+        StudentData.push(data);
+      }
+   }
   const [headers, ...data] = StudentData;
   const studentsData = data.map((student) => {
       const studentObject = {};
       headers.forEach((heading, index) => {
-          if (heading === "Total Marks") {
+          if (heading === "Total Marks obtained") {
               studentObject["total"] = { total: student[index] };
           } else {
               studentObject[heading] = student[index];
@@ -1627,8 +1758,39 @@ const StudentMarksUpload = async (req, res) => {
       res.status(500).json({ response: err.message });
   }
 };
+const getstudentmarks=(req,res)=>{
+  const {id,exam}=req.params;
+  const sql="SELECT * FROM  `student_exam_marks` WHERE student_id=? AND exam_name=?"
+  db.query(sql,[id,exam],(err,data)=>{
+    if(err){
+      res.status(404).json({response:err});
+    }else{
+      res.status(200).json({response:data});
+    }
+  })
+}
 
+const UpdateStudentMarks=(req,res)=>{
+  const {school_id,student_id}=req.params;
+  const sqldata=[
+    JSON.stringify(req.body.marks),
+    school_id,
+    student_id,
+    req.body.exam,
+  ]
+  const sql="UPDATE `student_exam_marks` SET `marksdata`=? WHERE school_id=? AND student_id=? AND exam_name=?";
+  db.query(sql,sqldata,(err,data)=>{
+    if(err){
+      res.status(404).json({Response:err});
+    }else{
+      res.status(200).json({Response:true});
+    }
+  })
+
+}
 module.exports = {
+  getstudentmarks,
+  UpdateStudentMarks,
   SchoolExam_Get,
   StudentMarksUpload,
   SchoolExam_Post,
